@@ -1,0 +1,341 @@
+openapi: 3.0.3
+info:
+  title: Hab-hab CDO API
+  description: >
+    API for managing and accessing street food stalls in Cagayan de Oro City. 
+    Supports local vendors, food tourism, and integration with food delivery platforms.
+  version: 1.0.0
+
+servers:
+  - url: https://api.habhabcdo.com/v1
+
+tags:
+  - name: Stall
+    description: Endpoints for managing and retrieving street food stalls.
+  - name: Vendor
+    description: Endpoints for vendors to manage their stalls.
+  - name: Food
+    description: Endpoints for managing food items offered at stalls.
+
+paths:
+  /StreetFoodStall:
+    get:
+      summary: List all street food stalls.
+      tags:
+        - Stall
+      parameters:
+        - name: location
+          in: query
+          schema:
+            type: string
+          description: Filter by location.
+        - name: foodtype
+          in: query
+          schema:
+            type: string
+          description: Filter by food specialty (e.g., proven, kwek-kwek).
+        - name: hours
+          in: query
+          schema:
+            type: string
+          description: Filter by operating hours.
+        - name: price
+          in: query
+          schema:
+            type: string
+          description: Filter by price range (e.g., "15-20 pesos").
+      responses:
+        '200':
+          description: A list of stalls matching the filters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreetFoodStall'
+
+    post:
+      summary: Register a new street food stall.
+      tags:
+        - Stall
+      security:
+        - VendorKeyAuth: []
+        - AdminKeyAuth: []
+      requestBody:
+        description: Stall details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreetFoodStall'
+      responses:
+        '201':
+          description: Stall successfully registered.
+        '400':
+          description: Invalid data.
+
+  /StreetFoodStall/{id}:
+    get:
+      summary: Get details of a specific street food stall.
+      tags:
+        - Stall
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Stall ID.
+      responses:
+        '200':
+          description: Details of the stall.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreetFoodStall'
+        '404':
+          description: Stall not found.
+
+    put:
+      summary: Update a specific stall.
+      tags:
+        - Stall
+      security:
+        - AdminKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Stall ID.
+      requestBody:
+        description: Updated stall details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreetFoodStall'
+      responses:
+        '200':
+          description: Stall successfully updated.
+        '404':
+          description: Stall not found.
+
+    delete:
+      summary: Remove a specific stall.
+      tags:
+        - Stall
+      security:
+        - AdminKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Stall ID.
+      responses:
+        '200':
+          description: Stall successfully removed.
+        '404':
+          description: Stall not found.
+
+  /Vendor/StreetFoodStall/{id}:
+    put:
+      summary: Vendor can update their own street food stall.
+      tags:
+        - Vendor
+      security:
+        - VendorKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The ID of the vendor's stall to update.
+      requestBody:
+        description: Updated stall information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreetFoodStall'
+      responses:
+        '200':
+          description: Stall updated successfully.
+        '404':
+          description: Stall not found.
+    delete:
+      summary: Vendor can remove their own street food stall.
+      tags:
+        - Vendor
+      security:
+        - VendorKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The ID of the vendor's stall to remove.
+      responses:
+        '200':
+          description: Stall removed successfully.
+        '404':
+          description: Stall not found.
+
+  /FoodItem:
+    get:
+      summary: Get a list of food items offered at stalls.
+      tags:
+        - Food
+      parameters:
+        - name: foodtype
+          in: query
+          schema:
+            type: string
+          description: Filter by food type (e.g., proven, kwek-kwek).
+        - name: stall_id
+          in: query
+          schema:
+            type: string
+          description: Filter by stall ID.
+      responses:
+        '200':
+          description: A list of food items matching the filters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FoodItem'
+
+    post:
+      summary: Add a new food item to a stall.
+      tags:
+        - Food
+      security:
+        - VendorKeyAuth: []
+      requestBody:
+        description: Details of the food item.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodItem'
+      responses:
+        '201':
+          description: Food item successfully added.
+        '400':
+          description: Invalid data.
+
+  /FoodItem/{id}:
+    get:
+      summary: Get details of a specific food item.
+      tags:
+        - Food
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Food item ID.
+      responses:
+        '200':
+          description: Details of the food item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FoodItem'
+        '404':
+          description: Food item not found.
+
+    put:
+      summary: Update a specific food item.
+      tags:
+        - Food
+      security:
+        - VendorKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Food item ID.
+      requestBody:
+        description: Updated food item details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoodItem'
+      responses:
+        '200':
+          description: Food item successfully updated.
+        '404':
+          description: Food item not found.
+
+    delete:
+      summary: Remove a specific food item.
+      tags:
+        - Food
+      security:
+        - VendorKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Food item ID.
+      responses:
+        '200':
+          description: Food item successfully removed.
+        '404':
+          description: Food item not found.
+
+components:
+  securitySchemes:
+    VendorKeyAuth:
+      type: apiKey
+      in: header
+      name: Vendor-Authorization
+    AdminKeyAuth:
+      type: apiKey
+      in: header
+      name: Admin-Authorization
+
+  schemas:
+    StreetFoodStall:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        food_type:
+          type: string
+        hours:
+          type: string
+        price_range:
+          type: string
+
+    FoodItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: string
+        description:
+          type: string
+        stall_id:
+          type: string
